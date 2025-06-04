@@ -41,17 +41,17 @@ button i{
 }
 
 button.a{
-  background-color: #FF9900;
+  /* background-color: #FF9900; */
 }
 
 button.b{
-  background-color: #0080FF;
+  /* background-color: #0080FF; */
 }
 
 button.c{ /* Match bg-color */
   /* background-color: #f4e800; */
   /* background-color: #DB4437; */
-  background-color: #0F9D58;
+  /* background-color: #0F9D58; */
 }
 
 #tip{
