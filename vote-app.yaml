@@ -128,7 +128,7 @@ metadata:
   # annotations:
     # reloader.stakater.com/match: "true"
 data:
-  option_a: "AWS-1"
+  option_a: "AWS"
   option_b: "Azure"
   option_c: "GCP"
   option_a_icon: "static/images/aws-circ.png"
@@ -136,8 +136,8 @@ data:
   option_c_icon: "static/images/gcp-circ.png"
   option_a_bgcolor: "#FF9900"
   option_b_bgcolor: "#0080FF"
-  # option_c_bgcolor: "#f4e800"
-  option_c_bgcolor: "#DB4437"
+  option_c_bgcolor: "#f4e800"
+  # option_c_bgcolor: "#DB4437"
   # option_c_bgcolor: "#0F9D58"
 ---
 apiVersion: v1
