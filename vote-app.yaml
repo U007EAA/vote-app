@@ -136,7 +136,9 @@ data:
   option_c_icon: "static/images/gcp-circ.png"
   option_a_bgcolor: "#FF9900"
   option_b_bgcolor: "#0080FF"
-  option_c_bgcolor: "#0F9D58"
+  option_c_bgcolor: "#f4e800"
+  # option_c_bgcolor: "#DB4437"
+  # option_c_bgcolor: "#0F9D58"
 ---
 apiVersion: v1
 kind: Service
