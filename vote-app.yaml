@@ -128,7 +128,7 @@ metadata:
   # annotations:
     # reloader.stakater.com/match: "true"
 data:
-  option_a: "AWS"
+  option_a: "AWS-1"
   option_b: "Azure"
   option_c: "GCP"
   option_a_icon: "static/images/aws-circ.png"
