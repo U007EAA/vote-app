@@ -1,0 +1,237 @@
+## TODO: 
+## 1. Add Horizontal Pod Autoscaler - IN PROGRESS
+## 2. Make it Highly Available (deployed in separate availability zones, different nodes) - ALL GOODS
+## 3. Make it HTTPS - ALL GOODS
+## 4. Add Deployment Strategies (Blue green, etc.)
+## 5. Auto restart if there's update in configmap or secrets - ALL GOODS
+## 6. Jenkins Pipeline for deploying to kubernetes
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote-app
+  namespace: erwin-apps
+  labels:
+    app: vote-app
+  annotations:
+    reloader.stakater.com/auto: "true"
+    # secret.reloader.stakater.com/reload: "vote-app"
+    # configmap.reloader.stakater.com/reload: "vote-app"
+    # reloader.stakater.com/search: "true"
+    # reloader.stakater.com/rollout-strategy: "restart"
+spec:
+  selector:
+    matchLabels:
+      app: vote-app
+  replicas: 4
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: vote-app
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      volumes:
+      - name: vote-app-volume
+        configMap:
+          name: vote-app
+      containers:
+      - name:  vote-app
+        image:  eandres007/vote-app:1.0.0
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        ports:
+        - containerPort: 5000
+        env:
+        - name: OPTION_A
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_a
+        - name: OPTION_B
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_b
+        - name: OPTION_C
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_c
+        - name: OPTION_A_ICON
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_a_icon
+        - name: OPTION_B_ICON
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_b_icon
+        - name: OPTION_C_ICON
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_c_icon
+        - name: OPTION_A_BGCOLOR
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_a_bgcolor
+        - name: OPTION_B_BGCOLOR
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_b_bgcolor
+        - name: OPTION_C_BGCOLOR
+          valueFrom:
+            configMapKeyRef:
+              name: vote-app
+              key: option_c_bgcolor
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: topology.kubernetes.io/zone
+      #           operator: In
+      #           values:
+      #           - us-east-1a
+      #           - us-east-1b
+                # - us-east-1c
+        # podAntiAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #   - labelSelector:
+        #       matchExpressions:
+        #       - key: app
+        #         operator: In
+        #         values:
+        #         - vote-app
+        #     topologyKey: topology.kubernetes.io/zone
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vote-app
+  namespace: erwin-apps
+  # annotations:
+    # reloader.stakater.com/match: "true"
+data:
+  option_a: "AWS"
+  option_b: "Azure"
+  option_c: "GCP"
+  option_a_icon: "static/images/aws-circ.png"
+  option_b_icon: "static/images/azure-circ.png"
+  option_c_icon: "static/images/gcp-circ.png"
+  option_a_bgcolor: "#FF9900"
+  option_b_bgcolor: "#0080FF"
+  option_c_bgcolor: "#0F9D58"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vote
+  namespace: erwin-apps
+spec:
+  # type: NodePort
+  selector:
+    app: vote-app
+  ports:
+  - port: 5000
+    targetPort: 5000
+    # nodePort: 30690
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: vault-issuer
+    cert-manager.io/common-name: va.nexus-sa.platform-services-dev.us-east-1.cloudcwt.com
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    kubernetes.io/ingressClassName: nginx-app
+  name: vote-app-ingress
+  namespace: erwin-apps
+spec:
+  ingressClassName: nginx-app
+  rules:
+  - host: vote-app.nexus-sa.platform-services-dev.us-east-1.cloudcwt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vote
+            port:
+              number: 5000
+      # - path: /results
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: result
+      #       port:
+      #         number: 5001
+  tls:
+  - hosts:
+    - vote-app.nexus-sa.platform-services-dev.us-east-1.cloudcwt.com
+    secretName: vote-app.nexus-sa.platform-services-dev.us-east-1.cloudcwt.com-tls
+status:
+  loadBalancer:
+    ingress:
+    - hostname: k8s-ingressn-ingressn-3664109728-e51f60bcf1fb63ce.elb.us-east-1.amazonaws.com
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name:  redis-db
+  namespace: erwin-apps
+  labels:
+    app:  redis-db
+spec:
+  selector:
+    matchLabels:
+      app: redis-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  redis-db
+    spec:
+      containers:
+      - name:  redis-db
+        image:  redis:7.0-alpine3.15
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        ports:
+        - containerPort: 6379
+          name:  redis-db
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: erwin-apps
+spec:
+  selector:
+    app: redis-db
+  ports:
+  - port: 6379
+    targetPort: 6379

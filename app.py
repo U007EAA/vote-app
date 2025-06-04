@@ -12,6 +12,9 @@ option_c = os.getenv('OPTION_C', "GCP")
 option_a_icon = os.getenv('OPTION_A_ICON', "static/images/aws-circ.png")
 option_b_icon = os.getenv('OPTION_B_ICON', "static/images/azure-circ.png")
 option_c_icon = os.getenv('OPTION_C_ICON', "static/images/gcp-circ.png")
+option_a_bgcolor = os.getenv('OPTION_A_BGCOLOR', "#FF9900")
+option_b_bgcolor = os.getenv('OPTION_B_BGCOLOR', "#0080F")
+option_c_bgcolor = os.getenv('OPTION_C_BGCOLOR', "#0F9D58")
 hostname = socket.gethostname()
 
 app = Flask(__name__)
@@ -45,6 +48,9 @@ def hello():
         option_a_icon=option_a_icon,
         option_b_icon=option_b_icon,
         option_c_icon=option_c_icon,
+        option_a_bgcolor=option_a_bgcolor,
+        option_b_bgcolor=option_b_bgcolor,
+        option_c_bgcolor=option_c_bgcolor,
         hostname=hostname,
         vote=vote,
     ))
